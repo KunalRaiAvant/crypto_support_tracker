@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Support Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <link href="{{ url_for('static', filename='css/main.css') }}" rel="stylesheet">
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="mb-8">
+            <h1 class="text-3xl font-bold mb-4">Crypto Support Tracker</h1>
+            <!-- Currency Pair Selector -->
+            <div class="flex space-x-4 mb-4">
+                <select id="pair-selector" class="bg-gray-800 text-white px-4 py-2 rounded">
+                    <option value="BTCUSDT">BTC/USDT</option>
+                    <option value="ETHUSDT">ETH/USDT</option>
+                    <option value="BNBUSDT">BNB/USDT</option>
+                    <option value="SOLUSDT">SOL/USDT</option>
+                </select>
+                <select id="timeframe-selector" class="bg-gray-800 text-white px-4 py-2 rounded">
+                    <option value="5m">5m</option>
+                    <option value="15m">15m</option>
+                    <option value="1h" selected>1h</option>
+                    <option value="4h">4h</option>
+                </select>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <!-- Price Ticker -->
+            <div class="lg:col-span-1">
+                <div class="bg-gray-800 rounded-lg p-6">
+                    <h2 class="text-xl font-bold mb-4">Current Price</h2>
+                    <div id="price-ticker">
+                        <div class="text-4xl font-bold mb-2" id="current-price">Loading...</div>
+                        <div class="flex items-center space-x-2">
+                            <span id="price-change" class="text-lg">0.00%</span>
+                            <span class="text-gray-400">24h Change</span>
+                        </div>
+                        <div class="mt-4 grid grid-cols-2 gap-4">
+                            <div>
+                                <div class="text-gray-400 text-sm">24h High</div>
+                                <div id="price-high">-</div>
+                            </div>
+                            <div>
+                                <div class="text-gray-400 text-sm">24h Low</div>
+                                <div id="price-low">-</div>
+                            </div>
+                            <div>
+                                <div class="text-gray-400 text-sm">24h Volume</div>
+                                <div id="volume">-</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart -->
+            <div class="lg:col-span-3">
+                <div class="bg-gray-800 rounded-lg p-6">
+                    <div id="price-chart" class="w-full h-96"></div>
+                </div>
+            </div>
+
+            <!-- Support Levels -->
+            <div class="lg:col-span-4">
+                <div class="bg-gray-800 rounded-lg p-6">
+                    <h2 class="text-xl font-bold mb-4">Support Levels</h2>
+                    <div id="support-levels" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Support level cards will be dynamically inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/websocket.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/chart.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/support.js') }}"></script>
+</body>
+</html>

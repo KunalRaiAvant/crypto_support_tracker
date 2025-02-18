@@ -1,0 +1,115 @@
+<!-- Price Ticker Component -->
+<div class="bg-gray-800 rounded-lg p-6">
+    <h2 class="text-xl font-bold mb-4">Current Price</h2>
+    
+    <div id="price-ticker">
+        <!-- Main Price Display -->
+        <div class="text-4xl font-bold mb-2" id="current-price">
+            <div class="animate-pulse bg-gray-700 h-10 w-32 rounded"></div>
+        </div>
+        
+        <!-- Price Change Indicator -->
+        <div class="flex items-center space-x-2 mb-4">
+            <span id="price-change" class="text-lg">
+                <div class="animate-pulse bg-gray-700 h-6 w-16 rounded"></div>
+            </span>
+            <span class="text-gray-400">24h Change</span>
+        </div>
+        
+        <!-- Key Stats -->
+        <div class="mt-4 grid grid-cols-2 gap-4">
+            <div>
+                <div class="text-gray-400 text-sm mb-1">24h High</div>
+                <div id="price-high" class="font-medium">
+                    <div class="animate-pulse bg-gray-700 h-6 w-24 rounded"></div>
+                </div>
+            </div>
+            <div>
+                <div class="text-gray-400 text-sm mb-1">24h Low</div>
+                <div id="price-low" class="font-medium">
+                    <div class="animate-pulse bg-gray-700 h-6 w-24 rounded"></div>
+                </div>
+            </div>
+            <div>
+                <div class="text-gray-400 text-sm mb-1">24h Volume</div>
+                <div id="volume" class="font-medium">
+                    <div class="animate-pulse bg-gray-700 h-6 w-24 rounded"></div>
+                </div>
+            </div>
+            <div>
+                <div class="text-gray-400 text-sm mb-1">Last Update</div>
+                <div id="last-update" class="font-medium text-gray-300">
+                    <div class="animate-pulse bg-gray-700 h-6 w-24 rounded"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Active Support Level Counter -->
+        <div class="mt-6 pt-4 border-t border-gray-700">
+            <div class="flex justify-between items-center">
+                <span class="text-gray-400">Active Support Levels</span>
+                <span id="active-supports-count" class="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium">0</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Format price with appropriate decimal places
+    function formatPrice(price) {
+        if (price >= 1000) {
+            return parseFloat(price).toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        } else if (price >= 1) {
+            return parseFloat(price).toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 4
+            });
+        } else {
+            return parseFloat(price).toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 8
+            });
+        }
+    }
+    
+    // Format numbers with K, M, B suffix
+    function formatNumber(num) {
+        if (num >= 1_000_000_000) {
+            return (num / 1_000_000_000).toFixed(2) + 'B';
+        } else if (num >= 1_000_000) {
+            return (num / 1_000_000).toFixed(2) + 'M';
+        } else if (num >= 1_000) {
+            return (num / 1_000).toFixed(2) + 'K';
+        } else {
+            return num.toFixed(2);
+        }
+    }
+    
+    // Update last update timestamp
+    function updateTimestamp() {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString();
+        document.getElementById('last-update').textContent = timeString;
+    }
+    
+    // Update active support count
+    function updateActiveSupportCount(count) {
+        const countElement = document.getElementById('active-supports-count');
+        countElement.textContent = count;
+        
+        // Update styling based on count
+        if (count === 0) {
+            countElement.classList.remove('bg-blue-600', 'bg-green-600');
+            countElement.classList.add('bg-gray-600');
+        } else if (count >= 3) {
+            countElement.classList.remove('bg-blue-600', 'bg-gray-600');
+            countElement.classList.add('bg-green-600');
+        } else {
+            countElement.classList.remove('bg-gray-600', 'bg-green-600');
+            countElement.classList.add('bg-blue-600');
+        }
+    }
+</script>

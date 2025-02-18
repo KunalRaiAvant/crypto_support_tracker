@@ -1,0 +1,248 @@
+<!-- Support Levels Component -->
+<div class="bg-gray-800 rounded-lg p-6">
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold">Support Levels</h2>
+        <div class="flex items-center">
+            <div class="mr-4 text-sm">
+                <span class="text-gray-400">Sort by:</span>
+                <select id="support-sort" class="ml-2 bg-gray-700 text-white rounded px-2 py-1 text-sm">
+                    <option value="strength">Strength</option>
+                    <option value="price">Price</option>
+                    <option value="distance">Distance</option>
+                    <option value="recent">Recently Tested</option>
+                </select>
+            </div>
+            <button id="refresh-supports" class="bg-blue-600 hover:bg-blue-700 text-white rounded-full p-1">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Loading Indicator -->
+    <div id="support-loading" class="py-8 flex justify-center">
+        <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+    </div>
+    
+    <!-- Support Levels Grid -->
+    <div id="support-levels" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 hidden">
+        <!-- Support level cards will be dynamically inserted here -->
+    </div>
+    
+    <!-- No Supports Found Message -->
+    <div id="no-supports" class="py-12 text-center hidden">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+        <p class="text-lg text-gray-400">No support levels detected</p>
+        <p class="text-sm text-gray-500 mt-2">Try changing the timeframe or wait for more price action</p>
+    </div>
+</div>
+
+<!-- Template for support level card -->
+<template id="support-card-template">
+    <div class="support-card bg-gray-700 rounded-lg p-4 transition-all duration-300 hover:bg-gray-600">
+        <div class="flex justify-between items-center mb-2">
+            <span class="price text-lg font-bold"></span>
+            <span class="badge rounded-full px-2 py-0.5 text-xs font-medium"></span>
+        </div>
+        <div class="mb-3">
+            <div class="flex justify-between text-sm mb-1">
+                <span>Strength</span>
+                <span class="strength-value"></span>
+            </div>
+            <div class="w-full bg-gray-600 rounded-full h-2">
+                <div class="strength-bar bg-blue-500 rounded-full h-2"></div>
+            </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2 text-sm text-gray-300">
+            <div>
+                <div class="text-gray-400 text-xs">Distance</div>
+                <div class="distance-value"></div>
+            </div>
+            <div>
+                <div class="text-gray-400 text-xs">Touches</div>
+                <div class="touches-value"></div>
+            </div>
+            <div class="col-span-2">
+                <div class="text-gray-400 text-xs">Last Test</div>
+                <div class="last-test-value"></div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // References to DOM elements
+        const supportLevelsContainer = document.getElementById('support-levels');
+        const supportLoadingIndicator = document.getElementById('support-loading');
+        const noSupportsMessage = document.getElementById('no-supports');
+        const supportCardTemplate = document.getElementById('support-card-template');
+        const sortSelector = document.getElementById('support-sort');
+        const refreshButton = document.getElementById('refresh-supports');
+        
+        // Current support levels data
+        let currentSupportLevels = [];
+        
+        // Initialize support levels display
+        function initializeSupportLevels() {
+            // Show loading initially
+            showLoading();
+            
+            // Setup sort selector
+            sortSelector.addEventListener('change', function() {
+                sortSupportLevels(this.value);
+            });
+            
+            // Setup refresh button
+            refreshButton.addEventListener('click', function() {
+                showLoading();
+                if (typeof requestSupportUpdate === 'function') {
+                    requestSupportUpdate();
+                }
+            });
+        }
+        
+        // Show loading indicator
+        function showLoading() {
+            supportLevelsContainer.classList.add('hidden');
+            noSupportsMessage.classList.add('hidden');
+            supportLoadingIndicator.classList.remove('hidden');
+        }
+        
+        // Update support levels with new data
+        function updateSupportLevels(levels) {
+            currentSupportLevels = levels;
+            
+            // Hide loading
+            supportLoadingIndicator.classList.add('hidden');
+            
+            // Show no supports message if empty
+            if (!levels || levels.length === 0) {
+                supportLevelsContainer.classList.add('hidden');
+                noSupportsMessage.classList.remove('hidden');
+                return;
+            }
+            
+            // Show support levels container
+            supportLevelsContainer.classList.remove('hidden');
+            noSupportsMessage.classList.add('hidden');
+            
+            // Sort by current sort selection
+            sortSupportLevels(sortSelector.value);
+        }
+        
+        // Sort and render support levels
+        function sortSupportLevels(sortType) {
+            if (!currentSupportLevels || currentSupportLevels.length === 0) return;
+            
+            let sortedLevels = [...currentSupportLevels];
+            
+            switch(sortType) {
+                case 'strength':
+                    sortedLevels.sort((a, b) => b.strength - a.strength);
+                    break;
+                case 'price':
+                    sortedLevels.sort((a, b) => a.price - b.price);
+                    break;
+                case 'distance':
+                    sortedLevels.sort((a, b) => Math.abs(a.distance) - Math.abs(b.distance));
+                    break;
+                case 'recent':
+                    sortedLevels.sort((a, b) => new Date(b.last_test) - new Date(a.last_test));
+                    break;
+            }
+            
+            renderSupportLevels(sortedLevels);
+        }
+        
+        // Render support levels to the container
+        function renderSupportLevels(levels) {
+            // Clear container
+            supportLevelsContainer.innerHTML = '';
+            
+            levels.forEach(level => {
+                const card = document.importNode(supportCardTemplate.content, true);
+                
+                // Set price
+                card.querySelector('.price').textContent = `$${level.price.toLocaleString('en-US', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                })}`;
+                
+                // Set badge
+                const badge = card.querySelector('.badge');
+                if (Math.abs(level.distance) < 1) {
+                    badge.textContent = 'Active';
+                    badge.classList.add('bg-green-600', 'text-white');
+                } else {
+                    badge.textContent = `${Math.abs(level.distance).toFixed(1)}% ${level.distance < 0 ? 'Below' : 'Above'}`;
+                    badge.classList.add('bg-gray-500', 'text-white');
+                }
+                
+                // Set strength
+                card.querySelector('.strength-value').textContent = `${level.strength}%`;
+                card.querySelector('.strength-bar').style.width = `${level.strength}%`;
+                
+                // Adjust strength bar color based on value
+                const strengthBar = card.querySelector('.strength-bar');
+                if (level.strength >= 80) {
+                    strengthBar.classList.add('bg-green-500');
+                    strengthBar.classList.remove('bg-blue-500', 'bg-yellow-500');
+                } else if (level.strength >= 50) {
+                    strengthBar.classList.add('bg-blue-500');
+                    strengthBar.classList.remove('bg-green-500', 'bg-yellow-500');
+                } else {
+                    strengthBar.classList.add('bg-yellow-500');
+                    strengthBar.classList.remove('bg-green-500', 'bg-blue-500');
+                }
+                
+                // Set distance value
+                const distanceValue = card.querySelector('.distance-value');
+                distanceValue.textContent = `${Math.abs(level.distance).toFixed(2)}%`;
+                distanceValue.classList.add(level.distance < 0 ? 'text-red-400' : 'text-green-400');
+                
+                // Set touches
+                card.querySelector('.touches-value').textContent = level.touches;
+                
+                // Set last test
+                const lastTest = new Date(level.last_test);
+                const timeAgo = getTimeAgo(lastTest);
+                card.querySelector('.last-test-value').textContent = timeAgo;
+                
+                supportLevelsContainer.appendChild(card);
+            });
+        }
+        
+        // Get time ago string
+        function getTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            
+            const intervals = {
+                year: 31536000,
+                month: 2592000,
+                week: 604800,
+                day: 86400,
+                hour: 3600,
+                minute: 60
+            };
+            
+            for (const [unit, secondsInUnit] of Object.entries(intervals)) {
+                const interval = Math.floor(seconds / secondsInUnit);
+                if (interval >= 1) {
+                    return `${interval} ${unit}${interval === 1 ? '' : 's'} ago`;
+                }
+            }
+            
+            return 'Just now';
+        }
+        
+        // Initialize on load
+        initializeSupportLevels();
+        
+        // Export functions to global scope
+        window.updateSupportLevels = updateSupportLevels;
+    });
+</script>

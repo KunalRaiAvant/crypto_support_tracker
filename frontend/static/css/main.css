@@ -1,0 +1,154 @@
+/* Custom CSS for Crypto Support Tracker */
+
+/* Chart customizations */
+.js-plotly-plot .plotly .modebar {
+    opacity: 0.3;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.js-plotly-plot .plotly .modebar:hover {
+    opacity: 1;
+}
+
+.js-plotly-plot .plotly .modebar-btn {
+    color: #718096 !important;
+}
+
+.js-plotly-plot .plotly .modebar-btn:hover {
+    color: #e2e8f0 !important;
+}
+
+.js-plotly-plot .plotly .modebar-btn.active {
+    color: #4299e1 !important;
+}
+
+/* Price change animations */
+@keyframes price-up {
+    0% { color: #ffffff; }
+    50% { color: #48bb78; }
+    100% { color: #ffffff; }
+}
+
+@keyframes price-down {
+    0% { color: #ffffff; }
+    50% { color: #f56565; }
+    100% { color: #ffffff; }
+}
+
+.price-up-animation {
+    animation: price-up 1s ease-in-out;
+}
+
+.price-down-animation {
+    animation: price-down 1s ease-in-out;
+}
+
+/* Support level card effects */
+.support-card {
+    transition: all 0.2s ease-in-out;
+}
+
+.support-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+}
+
+/* Active support badge pulse */
+@keyframes support-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(72, 187, 120, 0.7); }
+    70% { box-shadow: 0 0 0 6px rgba(72, 187, 120, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(72, 187, 120, 0); }
+}
+
+.badge.bg-green-600 {
+    animation: support-pulse 2s infinite;
+}
+
+/* Loading spinner */
+.loading-spinner {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #4299e1;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .connection-status {
+        display: none;
+    }
+    
+    .support-card {
+        min-height: 160px;
+    }
+}
+
+/* Tooltip customizations */
+.tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip .tooltip-text {
+    visibility: hidden;
+    background-color: #2d3748;
+    color: #f7fafc;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 10px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    border: 1px solid #4a5568;
+}
+
+.tooltip .tooltip-text::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #2d3748 transparent transparent transparent;
+}
+
+.tooltip:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Focus states for accessibility */
+button:focus, select:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
+}
+
+/* Dark mode optimizations */
+@media (prefers-color-scheme: dark) {
+    .bg-gray-900 {
+        background-color: #111827;
+    }
+    
+    .bg-gray-800 {
+        background-color: #1f2937;
+    }
+    
+    .bg-gray-700 {
+        background-color: #374151;
+    }
+}

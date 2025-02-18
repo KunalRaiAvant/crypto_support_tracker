@@ -1,0 +1,99 @@
+<!-- Chart Component -->
+<div class="bg-gray-800 rounded-lg p-6">
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold">Price Chart</h2>
+        <div class="flex space-x-2">
+            <!-- Timeframe Selectors -->
+            <div class="inline-flex rounded-md shadow-sm" role="group">
+                <button id="tf-1h" class="tf-button px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-l-lg">1H</button>
+                <button id="tf-4h" class="tf-button px-4 py-2 text-sm font-medium bg-gray-700 text-white">4H</button>
+                <button id="tf-1d" class="tf-button px-4 py-2 text-sm font-medium bg-gray-700 text-white rounded-r-lg">1D</button>
+            </div>
+            
+            <!-- Toggle Controls -->
+            <div class="inline-flex rounded-md shadow-sm" role="group">
+                <button id="toggle-price" class="toggle-button px-4 py-2 text-sm font-medium bg-gray-700 text-white rounded-l-lg hover:bg-gray-600">
+                    <span class="indicator-dot bg-green-500 inline-block w-2 h-2 rounded-full mr-1"></span>
+                    Price
+                </button>
+                <button id="toggle-volume" class="toggle-button px-4 py-2 text-sm font-medium bg-gray-700 text-white hover:bg-gray-600">
+                    <span class="indicator-dot bg-blue-500 inline-block w-2 h-2 rounded-full mr-1"></span>
+                    Volume
+                </button>
+                <button id="toggle-supports" class="toggle-button px-4 py-2 text-sm font-medium bg-gray-700 text-white rounded-r-lg hover:bg-gray-600">
+                    <span class="indicator-dot bg-yellow-500 inline-block w-2 h-2 rounded-full mr-1"></span>
+                    Supports
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Chart Container -->
+    <div id="price-chart" class="w-full h-96 bg-gray-900 rounded-lg"></div>
+    
+    <!-- Chart Legend and Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
+        <div class="bg-gray-700 rounded-lg p-3">
+            <div class="text-gray-400 text-xs mb-1">Open</div>
+            <div id="stat-open" class="text-lg font-semibold">$0.00</div>
+        </div>
+        <div class="bg-gray-700 rounded-lg p-3">
+            <div class="text-gray-400 text-xs mb-1">High</div>
+            <div id="stat-high" class="text-lg font-semibold">$0.00</div>
+        </div>
+        <div class="bg-gray-700 rounded-lg p-3">
+            <div class="text-gray-400 text-xs mb-1">Low</div>
+            <div id="stat-low" class="text-lg font-semibold">$0.00</div>
+        </div>
+        <div class="bg-gray-700 rounded-lg p-3">
+            <div class="text-gray-400 text-xs mb-1">Close</div>
+            <div id="stat-close" class="text-lg font-semibold">$0.00</div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart Component Scripts -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize timeframe buttons
+        const timeframeButtons = document.querySelectorAll('.tf-button');
+        timeframeButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Reset all buttons
+                timeframeButtons.forEach(btn => {
+                    btn.classList.remove('bg-blue-600');
+                    btn.classList.add('bg-gray-700');
+                });
+                
+                // Highlight selected button
+                this.classList.remove('bg-gray-700');
+                this.classList.add('bg-blue-600');
+                
+                // Handle timeframe change
+                const timeframe = this.id.split('-')[1];
+                if (typeof changeTimeframe === 'function') {
+                    changeTimeframe(timeframe);
+                }
+            });
+        });
+        
+        // Initialize toggle buttons
+        const toggleButtons = document.querySelectorAll('.toggle-button');
+        toggleButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Toggle active state
+                this.classList.toggle('bg-gray-700');
+                this.classList.toggle('bg-gray-600');
+                
+                const indicator = this.querySelector('.indicator-dot');
+                indicator.classList.toggle('opacity-50');
+                
+                // Handle specific toggles
+                const toggleType = this.id.split('-')[1];
+                if (typeof toggleChartElement === 'function') {
+                    toggleChartElement(toggleType);
+                }
+            });
+        });
+    });
+</script>

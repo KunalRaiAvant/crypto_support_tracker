@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Crypto Support Tracker{% endblock %}</title>
+    
+    <!-- External CSS and JS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    
+    <!-- Custom CSS -->
+    <link href="{{ url_for('static', filename='css/main.css') }}" rel="stylesheet">
+    
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'crypto-green': '#00c853',
+                        'crypto-red': '#ff4976',
+                        'chart-bg': '#181c27',
+                        'card-bg': '#242a38',
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <!-- Custom Styles -->
+    <style>
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #2d3748;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #4a5568;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #718096;
+        }
+        
+        /* Candlestick colors */
+        .js-plotly-plot .plotly .increases {
+            fill: #00c853;
+            stroke: #00c853;
+        }
+        
+        .js-plotly-plot .plotly .decreases {
+            fill: #ff4976;
+            stroke: #ff4976;
+        }
+    </style>
+    
+    {% block head %}{% endblock %}
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+    <!-- Header and Navigation -->
+    <header class="bg-gray-800 border-b border-gray-700">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex flex-wrap justify-between items-center">
+                <!-- Logo and Title -->
+                <div class="flex items-center">
+                    <svg class="h-8 w-8 text-blue-500 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                    </svg>
+                    <h1 class="text-2xl font-bold">Crypto Support Tracker</h1>
+                </div>
+                
+                <!-- Controls -->
+                <div class="flex items-center space-x-4 mt-4 sm:mt-0">
+                    <!-- Currency Pair Selector -->
+                    <select id="pair-selector" class="bg-gray-700 text-white px-4 py-2 rounded border border-gray-600">
+                        <option value="BTCUSDT">BTC/USDT</option>
+                        <option value="ETHUSDT">ETH/USDT</option>
+                        <option value="BNBUSDT">BNB/USDT</option>
+                        <option value="SOLUSDT">SOL/USDT</option>
+                    </select>
+                    
+                    <!-- Timeframe Selector -->
+                    <select id="timeframe-selector" class="bg-gray-700 text-white px-4 py-2 rounded border border-gray-600">
+                        <option value="5m">5m</option>
+                        <option value="15m">15m</option>
+                        <option value="1h" selected>1h</option>
+                        <option value="4h">4h</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- Footer -->
+    <footer class="bg-gray-800 border-t border-gray-700 py-6">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <p class="text-gray-400">&copy; 2025 Crypto Support Tracker</p>
+                </div>
+                <div class="flex space-x-4">
+                    <div class="connection-status flex items-center">
+                        <div id="connection-indicator" class="w-2 h-2 rounded-full bg-gray-500 mr-2"></div>
+                        <span id="connection-text" class="text-sm text-gray-400">Disconnected</span>
+                    </div>
+                    <div class="text-sm text-gray-400">
+                        <span id="last-update-time">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Common JavaScript -->
+    <script>
+        // Socket.IO connection
+        const socket = io();
+        
+        // Connection status
+        const connectionIndicator = document.getElementById('connection-indicator');
+        const connectionText = document.getElementById('connection-text');
+        const lastUpdateTime = document.getElementById('last-update-time');
+        
+        // Connect event
+        socket.on('connect', () => {
+            connectionIndicator.classList.remove('bg-gray-500', 'bg-red-500');
+            connectionIndicator.classList.add('bg-green-500');
+            connectionText.textContent = 'Connected';
+            updateLastUpdateTime();
+        });
+        
+        // Disconnect event
+        socket.on('disconnect', () => {
+            connectionIndicator.classList.remove('bg-green-500', 'bg-gray-500');
+            connectionIndicator.classList.add('bg-red-500');
+            connectionText.textContent = 'Disconnected';
+        });
+        
+        // Update last update time
+        function updateLastUpdateTime() {
+            const now = new Date();
+            lastUpdateTime.textContent = `Last update: ${now.toLocaleTimeString()}`;
+        }
+        
+        // Handle pair change
+        const pairSelector = document.getElementById('pair-selector');
+        pairSelector.addEventListener('change', (e) => {
+            socket.emit('change_pair', { pair: e.target.value });
+            updateLastUpdateTime();
+        });
+        
+        // Handle timeframe change
+        const timeframeSelector = document.getElementById('timeframe-selector');
+        timeframeSelector.addEventListener('change', (e) => {
+            socket.emit('change_timeframe', { timeframe: e.target.value });
+            updateLastUpdateTime();
+        });
+        
+        // Format price utility function
+        function formatPrice(price, decimals = 2) {
+            if (price === undefined || price === null) return '-';
+            
+            // Determine appropriate decimal places based on price magnitude
+            let decimalPlaces = decimals;
+            if (price < 1 && decimals < 4) decimalPlaces = 4;
+            if (price < 0.01 && decimals < 6) decimalPlaces = 6;
+            
+            return parseFloat(price).toLocaleString('en-US', {
+                minimumFractionDigits: decimalPlaces,
+                maximumFractionDigits: decimalPlaces
+            });
+        }
+        
+        // Format volume utility function
+        function formatVolume(volume) {
+            if (volume === undefined || volume === null) return '-';
+            
+            if (volume >= 1_000_000_000) {
+                return (volume / 1_000_000_000).toFixed(2) + 'B';
+            } else if (volume >= 1_000_000) {
+                return (volume / 1_000_000).toFixed(2) + 'M';
+            } else if (volume >= 1_000) {
+                return (volume / 1_000).toFixed(2) + 'K';
+            } else {
+                return volume.toFixed(2);
+            }
+        }
